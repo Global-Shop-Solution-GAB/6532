@@ -1,0 +1,578 @@
+﻿Program.Sub.ScreenSU.Start
+Gui.F_Cust..Create(BaseForm)
+Gui.F_Cust..Caption("Customer YTD Sales")
+Gui.F_Cust..Size(1028,720)
+Gui.F_Cust..MinX(0)
+Gui.F_Cust..MinY(0)
+Gui.F_Cust..Position(0,0)
+Gui.F_Cust..AlwaysOnTop(False)
+Gui.F_Cust..FontName("Tahoma")
+Gui.F_Cust..FontSize(8.25)
+Gui.F_Cust..ControlBox(True)
+Gui.F_Cust..MaxButton(True)
+Gui.F_Cust..MinButton(True)
+Gui.F_Cust..MousePointer(0)
+Gui.F_Cust..Moveable(True)
+Gui.F_Cust..Sizeable(True)
+Gui.F_Cust..ShowInTaskBar(True)
+Gui.F_Cust..TitleBar(True)
+Gui.F_Cust..Event(UnLoad,F_Cust_UnLoad)
+Gui.F_Cust.GSGC_Customers.Create(GsGridControl)
+Gui.F_Cust.GSGC_Customers.Enabled(True)
+Gui.F_Cust.GSGC_Customers.Visible(True)
+Gui.F_Cust.GSGC_Customers.Zorder(0)
+Gui.F_Cust.GSGC_Customers.Size(1018,660)
+Gui.F_Cust.GSGC_Customers.Position(3,28)
+Gui.F_Cust.GSGC_Customers.Event(RowCellClick,GSGC_Customers_RowCellClick)
+Gui.F_Cust.GSGC_Customers.Anchor(15)
+Gui.F_Cust.lbl1.Create(Label,"Year",True,22,13,0,4,9,True,0,"Tahoma",8.25,,0,0)
+Gui.F_Cust.lbl1.BorderStyle(0)
+Gui.F_Cust.txtYear.Create(TextBox,"",True,60,20,0,32,4,True,0,"Tahoma",8.25,,1)
+Gui.F_Cust.cmdRefresh.Create(Button)
+Gui.F_Cust.cmdRefresh.Enabled(True)
+Gui.F_Cust.cmdRefresh.Visible(True)
+Gui.F_Cust.cmdRefresh.Zorder(0)
+Gui.F_Cust.cmdRefresh.Size(26,20)
+Gui.F_Cust.cmdRefresh.Position(95,4)
+Gui.F_Cust.cmdRefresh.Caption("Refresh")
+Gui.F_Cust.cmdRefresh.FontName("Tahoma")
+Gui.F_Cust.cmdRefresh.FontSize(8.25)
+Gui.F_Cust.cmdRefresh.Event(Click,cmdRefresh)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+V.Global.bLoadData.Declare
+Program.Sub.Preflight.End
+Program.Sub.Main.Start
+'Programmmer: Bryan Pham
+'Customer: GM Lighting
+'Date: 11/1/2021
+'Quote: 13057 - Call: 
+'Desc.: customers dashboard with YTD Sales
+
+Function.Intrinsic.UI.UsePixels ' Allows you to use Pixels instead of Twips throughout
+v.Local.iYear.Declare
+f.Intrinsic.Date.Year(v.Ambient.Date,v.Local.iYear)
+gui.F_Cust.txtYear.Text(v.Local.iYear)
+
+f.ODBC.Connection!con.OpenCompanyConnection
+f.Intrinsic.Control.CallSub(cmdRefresh)
+F.Intrinsic.Control.CallSub(SetContextMenus)
+F.Intrinsic.Control.CallSub(Deserialize)
+gui.F_Cust..Show
+Program.Sub.Main.End
+
+Program.Sub.GSGC_Customers_RowCellClick.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.sCust.Declare
+v.Local.sParams.Declare
+
+F.Intrinsic.Control.SelectCase(V.Args.Column)
+	F.Intrinsic.Control.CaseAny("NAME_CUSTOMER_BILL")
+		Gui.F_Cust.GSGC_Customers.GetCellValueByColumnName("gvCust","CUSTOMER",V.Args.RowIndex,V.Local.sCust)
+		f.Intrinsic.String.Build("O!*!ZDR!*!{0}", v.Local.sCust, v.Local.sParams)
+		f.Global.General.CallWrapperSync(100000, v.Local.sParams)
+F.Intrinsic.Control.EndSelect
+		
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.GSGC_Customers_RowCellClick.End
+Program.Sub.F_Cust_UnLoad.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+F.Intrinsic.Control.If(V.Global.bLoadData)
+	F.Intrinsic.Control.CallSub(Serialize)
+F.Intrinsic.Control.EndIf
+
+F.ODBC.Connection!con.Close
+F.Intrinsic.Control.End 
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+	
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.F_Cust_UnLoad.End
+
+Program.Sub.cmdRefresh.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.bRet.Declare
+
+gui.F_Cust..Enabled(false)
+F.Intrinsic.Control.If(V.Global.bLoadData)
+	F.Intrinsic.Control.CallSub(Serialize)
+F.Intrinsic.Control.EndIf
+	
+f.Intrinsic.Control.CallSub(loadDTCust)
+F.Intrinsic.Control.CallSub(Deserialize)
+gui.F_Cust..Enabled(true)
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.cmdRefresh.End
+
+Program.Sub.SetContextMenus.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.bRet.Declare
+
+Gui.F_Cust..ContextMenuCreate("ctxCust")
+Gui.F_Cust.GSGC_Customers.ContextMenuAttach("ctxCust")
+Gui.F_Cust..ContextMenuAddItem("ctxCust","Refresh",0,"Refresh")
+Gui.F_Cust..ContextMenuAddItem("ctxCust","Export",0,"Export")	
+Gui.F_Cust..ContextMenuAddItem("ctxCust","ResetColumns",0,"Reset Columns")
+Gui.F_Cust..ContextMenuSetItemEventHandler("ctxCust","Refresh","cmdRefresh")
+Gui.F_Cust..ContextMenuSetItemEventHandler("ctxCust","Export","MenuClickExport")	
+Gui.F_Cust..ContextMenuSetItemEventHandler("ctxCust","ResetColumns","MenuClickResetColumns")
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.SetContextMenus.End
+
+Program.Sub.loadDTCust.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.bRet.Declare
+v.Local.sSQL.Declare
+v.Local.iYear.Declare
+
+v.Local.iYear.Set(v.Screen.F_Cust!txtYear.Text)
+f.Intrinsic.Control.if(v.DataTable.dtCust.Exists,=,true)
+	f.Data.Datatable.Close("dtCust")
+f.Intrinsic.Control.EndIf
+
+f.Intrinsic.Control.if(v.DataTable.dtCust$ShipTo.Exists,=,true)
+	f.Data.Datatable.Close("dtCust$ShipTo")
+f.Intrinsic.Control.EndIf
+
+V.Global.bLoadData.Set(True)
+
+f.Data.Datatable.CreateFromSQL("dtCust","con","Select RTRIM(A.CUSTOMER) as CUSTOMER, RTRIM(A.NAME_CUSTOMER) as NAME_CUSTOMER_BILL,RTRIM(A.ADDRESS1) as ADDRESS1, RTRIM(A.ADDRESS2) as ADDRESS2, RTRIM(A.CITY) as CITY, RTRIM(A.STATE) as STATE, RTRIM(A.ZIP) as ZIP,RTRIM(A.COUNTRY) as COUNTRY, RTRIM(A.TELEPHONE) as TELEPHONE, RTRIM(B.EMAIL) as EMAIL, RTRIM(A.TERRITORY) as BRANCH, RTRIM(B.PRICE_CLASS) as PRICE_CLASS, RTRIM(A.SALESPERSON) as SALESPERSON, '' as SP_NAME, RTRIM(C.NAME_CUSTOMER_SHIP) As NAME_CUSTOMER_SHIP, RTRIM(C.ADDRESS1_SHIP) as ADDRESS1_SHIP, RTRIM(C.ADDRESS2_SHIP) as ADDRESS2_SHIP, RTRIM(C.CITY_SHIP) as CITY_SHIP, RTRIM(C.STATE_SHIP) as STATE_SHIP, RTRIM(C.CODE_ZIP_SHIP) as CODE_ZIP_SHIP,RTRIM(C.COUNTRY_SHIP) as COUNTRY_SHIP, cast(0 as float) as YTD_SALES,'' as CARRIER, B.DATE_NEW_CUSTOMER from V_CUSTOMER_MASTER A left join V_CUSTOMER_SALES B on A.CUSTOMER = B.CUSTOMER left join V_CUSTOMER_SHIPTO C on A.CUSTOMER = C.CUSTOMER order by A.CUSTOMER",true)
+
+'Set totals
+F.Intrinsic.String.Build("Select distinct rtrim(customer),Sum(Extension) As Extension From V_Order_Hist_Line Where Year(Date_Invoice) = {0} Group By rtrim(customer);",V.Local.iYear,V.Local.sSQL)
+f.Data.Dictionary.CreateFromSQL("dSales","con",v.Local.sSQL)
+f.Data.Dictionary.SetDefaultReturn("dSales",0)
+f.Data.Datatable.FillFromDictionary("dtCust","dSales","CUSTOMER","YTD_SALES")
+f.Data.Dictionary.Close("dSales")
+
+f.Data.Dictionary.CreateFromSQL("dCarrier","con","Select RTRIM(CUSTOMER), RTRIM(CARRIER_CD) From V_CUST_FORM_INFO;")
+f.Data.Dictionary.SetDefaultReturn("dCarrier","")
+f.Data.Datatable.FillFromDictionary("dtCust","dCarrier","CUSTOMER","CARRIER")
+f.Data.Dictionary.Close("dCarrier")
+
+f.Data.Dictionary.CreateFromSQL("dSP","con","Select RTRIM(SALESPERSON_CODE), RTRIM(SALESPERSON) From V_SALESPEOPLE;")
+f.Data.Dictionary.SetDefaultReturn("dSP","")
+f.Data.Datatable.FillFromDictionary("dtCust","dSP","SALESPERSON","SP_NAME")
+f.Data.Dictionary.Close("dSP")
+
+f.Data.Datatable.CreateFromSQL("dtCust$ShipTo","con","Select RTRIM(CUSTOMER) as CUSTOMER, SHIP_SEQ, RTRIM(CUSTOMER_NAME) as CUSTOMER_NAME,SHIP_ADDRESS1, SHIP_ADDRESS2, SHIP_CITY, SHIP_STATE, SHIP_ZIP, SHIP_COUNTRY from V_OE_MULTI_SHIP where CUSTOMER <> 'AMD100'",true)
+'f.Data.Datatable.CreateFromSQL("dtCust$ShipTo","con","Select RTRIM(CUSTOMER) as CUSTOMER, SHIP_SEQ, RTRIM(CUSTOMER_NAME) as CUSTOMER_NAME,SHIP_ADDRESS1, SHIP_ADDRESS2, SHIP_CITY, SHIP_STATE, SHIP_ZIP, SHIP_COUNTRY from V_OE_MULTI_SHIP",true)
+
+F.Data.DataTable.AddRelation("dtCust", "CUSTOMER", "dtCust$ShipTo", "CUSTOMER")
+f.Intrinsic.Control.CallSub(loadGVCust)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.loadDTCust.End
+
+Program.Sub.loadGVCust.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+v.Local.bRet.Declare
+V.Local.sCaption.Declare
+Gui.F_Cust.GSGC_Customers.AddGridViewFromDataTable("gvCust","dtCust")
+Gui.F_Cust.GSGC_Customers.AddGridViewFromDataTable("gvShipTo","dtCust$ShipTo")
+Gui.F_Cust.GSGC_Customers.SuspendLayout()
+
+Gui.F_Cust.GSGC_Customers.SetGridviewProperty("gvCust",V.Enum.GridViewPropertyNames!ColumnAutoWidth,False)
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SALESPERSON","Visible","False")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SALESPERSON","Caption","SP Code")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CUSTOMER","Caption","Customer")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CUSTOMER","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CUSTOMER","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CUSTOMER","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CUSTOMER","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CUSTOMER","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_BILL","Caption","Customer name")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_BILL","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_BILL","MinWidth","130")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_BILL","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_BILL","HeaderHAlignment","Center")
+'Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_BILL","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1","Caption","Address 1")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1","MinWidth","120")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2","Caption","Address 2")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2","MinWidth","80")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY","Caption","City")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE","Caption","State")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ZIP","Caption","Zip")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ZIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ZIP","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ZIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ZIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ZIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY","Caption","Country")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","TELEPHONE","Caption","Phone")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","TELEPHONE","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","TELEPHONE","MinWidth","70")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","TELEPHONE","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","TELEPHONE","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","TELEPHONE","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","EMAIL","Caption","Email")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","EMAIL","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","EMAIL","MinWidth","80")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","EMAIL","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","EMAIL","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","EMAIL","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","BRANCH","Caption","Branch")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","BRANCH","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","BRANCH","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","BRANCH","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","BRANCH","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","BRANCH","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","PRICE_CLASS","Caption","Price Class")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","PRICE_CLASS","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","PRICE_CLASS","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","PRICE_CLASS","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","PRICE_CLASS","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","PRICE_CLASS","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SP_NAME","Caption","Salesperson")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SP_NAME","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SP_NAME","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SP_NAME","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SP_NAME","HeaderHAlignment","Center")
+'Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","SP_NAME","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_SHIP","Caption","Customer Ship")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_SHIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_SHIP","MinWidth","80")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_SHIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_SHIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_SHIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1_SHIP","Caption","Address 1 - Ship")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1_SHIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1_SHIP","MinWidth","120")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1_SHIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1_SHIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS1_SHIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2_SHIP","Caption","Address 2 - Ship")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2_SHIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2_SHIP","MinWidth","80")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2_SHIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2_SHIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","ADDRESS2_SHIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY_SHIP","Caption","City - Ship")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY_SHIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY_SHIP","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY_SHIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY_SHIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CITY_SHIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE_SHIP","Caption","State - Ship")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE_SHIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE_SHIP","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE_SHIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE_SHIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","STATE_SHIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CODE_ZIP_SHIP","Caption","Zip - Ship")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CODE_ZIP_SHIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CODE_ZIP_SHIP","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CODE_ZIP_SHIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CODE_ZIP_SHIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CODE_ZIP_SHIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY_SHIP","Caption","Country - Ship")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY_SHIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY_SHIP","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY_SHIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY_SHIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","COUNTRY_SHIP","CellHAlignment","Center")
+
+F.Intrinsic.String.Build("YTD Sales ({0})",V.Company.CurrencySymbol,V.Local.sCaption)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","YTD_SALES","Caption",V.Local.sCaption)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","YTD_SALES","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","YTD_SALES","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","YTD_SALES","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","YTD_SALES","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","YTD_SALES","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","DATE_NEW_CUSTOMER","Caption","Customer Since")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","DATE_NEW_CUSTOMER","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","DATE_NEW_CUSTOMER","MinWidth","95")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","DATE_NEW_CUSTOMER","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","DATE_NEW_CUSTOMER","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","DATE_NEW_CUSTOMER","CellHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","DATE_NEW_CUSTOMER","DisplayCustomDateTime","d")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","NAME_CUSTOMER_BILL","IsHyperlink","True")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","YTD_SALES","DisplayCustomNumeric","#,###,###,##0.00")
+
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER","Visible",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER","Caption","Customer")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER_NAME","Caption","Customer Ship Name")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER_NAME","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER_NAME","MinWidth","100")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER_NAME","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER_NAME","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","CUSTOMER_NAME","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS1","Caption","Address 1")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS1","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS1","MinWidth","120")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS1","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS1","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS1","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS2","Caption","Address 2")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS2","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS2","MinWidth","80")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS2","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS2","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ADDRESS2","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_CITY","Caption","City")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_CITY","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_CITY","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_CITY","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_CITY","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_CITY","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_STATE","Caption","State")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_STATE","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_STATE","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_STATE","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_STATE","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_STATE","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ZIP","Caption","Zip")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ZIP","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ZIP","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ZIP","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ZIP","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_ZIP","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_COUNTRY","Caption","Country")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_COUNTRY","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_COUNTRY","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_COUNTRY","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_COUNTRY","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_COUNTRY","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_SEQ","Caption","Ship ID")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_SEQ","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_SEQ","MinWidth","60")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_SEQ","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_SEQ","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvShipTo","SHIP_SEQ","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CARRIER","Caption","Carrier")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CARRIER","AllowEdit",False)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CARRIER","MinWidth","70")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CARRIER","HeaderFontBold",True)
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CARRIER","HeaderHAlignment","Center")
+Gui.F_Cust.GSGC_Customers.SetColumnProperty("gvCust","CARRIER","CellHAlignment","Center")
+
+Gui.F_Cust.GSGC_Customers.ResumeLayout()
+Gui.F_Cust.GSGC_Customers.MainView("gvCust")
+gui.F_Cust..Enabled(True)
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.loadGVCust.End
+
+Program.Sub.Deserialize.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+V.Local.sSerialize.Declare
+V.Local.bFile.Declare
+
+'Delete old registry records
+F.Global.Registry.ReadValue(V.Caller.User,V.Caller.CompanyCode,"gvCust",6532,0,5,"",V.Local.sSerialize)
+F.Intrinsic.Control.If(V.Local.sSerialize,<>,"")
+	F.ODBC.Connection!common.OpenConnection(V.Ambient.Ccon,V.Ambient.Cuser,V.Ambient.Cpass)
+	F.ODBC.Connection!common.Execute("Delete From Gs_Registry Where Reg_ID = 6532 And Seq < 1000;")
+	F.ODBC.Connection!common.Close
+F.Intrinsic.Control.EndIf
+
+'GVCust
+F.Global.Registry.ReadValue(V.Caller.User,V.Caller.CompanyCode,"GVCust",6532,1001,6,"",V.Local.sSerialize)
+F.Intrinsic.Control.If(V.Local.sSerialize.Trim,<>,"")
+	Gui.F_Cust.GSGC_Customers.Deserialize(V.Local.sSerialize)
+F.Intrinsic.Control.EndIf
+'gvShipTo
+F.Global.Registry.ReadValue(V.Caller.User,V.Caller.CompanyCode,"gvShipTo",6532,1000,6,"",V.Local.sSerialize)
+F.Intrinsic.Control.If(V.Local.sSerialize.Trim,<>,"")
+	Gui.F_Cust.GSGC_Customers.Deserialize(V.Local.sSerialize)
+F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Deserialize.End
+
+Program.Sub.Serialize.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+V.Local.sSerialize.Declare
+
+'GVCust
+F.Intrinsic.Control.If(v.DataTable.dtCust.Exists,=,true)
+	Gui.F_Cust.GSGC_Customers.Serialize("gvCust",V.Local.sSerialize)
+	F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"gvCust",6532,1001,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.sSerialize)
+f.Intrinsic.Control.EndIf
+
+'gvShipTo
+F.Intrinsic.Control.If(v.DataTable.dtCust.Exists,=,true)
+	Gui.F_Cust.GSGC_Customers.Serialize("gvShipTo",V.Local.sSerialize)
+	F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"gvShipTo",6532,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,V.Local.sSerialize)
+f.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End
+F.Intrinsic.Control.EndTry
+Program.Sub.Serialize.End
+
+Program.Sub.MenuClickResetColumns.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"GVCust",6532,1001,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,"")
+F.Global.Registry.AddValue(V.Caller.User,V.Caller.CompanyCode,"gvShipTo",6532,1000,False,"Serialize",False,0,-999.0,1/1/1980,12:00:00 AM,"")
+
+V.Global.bLoadData.Set(False)
+F.Intrinsic.Control.CallSub(cmdRefresh)
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.MenuClickResetColumns.End
+
+Program.Sub.MenuClickExport.Start
+F.Intrinsic.Control.Try
+V.Local.sError.Declare
+
+V.Local.sFileExport.Declare
+V.Local.bExcel.Declare
+V.Local.bFileLocked.Declare
+V.Local.sMsg.Declare
+V.Local.sForm.Declare
+V.Local.sControl.Declare
+V.Local.bChart.Declare
+
+
+F.Automation.MSExcel.CheckPresence(V.Local.bExcel)
+F.Intrinsic.Control.If(V.Local.bExcel)
+	F.Intrinsic.String.Build("{0}\GCG_6532_{1}_Export.xlsx",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+	F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+	F.Intrinsic.Control.If(V.Local.bFileLocked)
+		F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+		F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+	F.Intrinsic.Control.Else
+		'Gui.F_Cust.GSGC_Customers.Export(V.Local.sFileExport,"xlsx")
+		Gui.F_Cust.GSGC_Customers.ExportDetails("xlsx", V.Local.sFileExport, 1)
+		F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+	F.Intrinsic.Control.EndIf
+F.Intrinsic.Control.Else
+	F.Intrinsic.String.Build("{0}\GCG_6532_{1}_Export.csv",V.Caller.LocalGssTempDir,V.Local.sControl,V.Local.sFileExport)
+	F.Intrinsic.File.IsFileLocked(V.Local.sFileExport,V.Local.bFileLocked)
+	F.Intrinsic.Control.If(V.Local.bFileLocked)
+		F.Intrinsic.String.Build("File is already open. Please close and export again.{0}File: {1}",V.Ambient.NewLine,V.Local.sFileExport,V.Local.sMsg)
+		F.Intrinsic.UI.Msgbox(V.Local.sMsg,"File In Use")
+	F.Intrinsic.Control.Else
+		Gui.F_Cust.GSGC_Customers.Export(V.Local.sFileExport,"csv")
+	F.Intrinsic.Control.EndIf
+	F.Intrinsic.Task.ShellExec(0,"",V.Local.sFileExport,"","",1)
+F.Intrinsic.Control.EndIf
+
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.End 
+F.Intrinsic.Control.EndTry
+Program.Sub.MenuClickExport.End
+
+Program.Sub.Comments.Start
+${$5$}$20.1.8256.24238$}$1
+${$6$}$bbaker$}$20220920162320640$}$pM7xsHplA2E9VCTenDTJ47gi1rF/t66WbfFQNqELaPcaxBaR6oe6wHNFBfrcSYEnPkzlvwj1r8A=
+Program.Sub.Comments.End
